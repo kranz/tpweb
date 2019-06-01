@@ -19,3 +19,14 @@ describe('Given an instance of my TpSocket library', () => {
     });
   });
 });
+
+describe('Given an instance of my TpSocket library', () => {
+  before(() => {
+    lib = new TpSocket();
+  });
+  describe('when I need the encoded name', () => {
+    it('should return the base64 string', () => {
+      expect(lib.encodedName).to.be.equal('QmFycmEtVGVtcGVzdA==');
+    });
+  });
+});
