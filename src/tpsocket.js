@@ -1,4 +1,5 @@
 import Base64 from './base64';
+import Websock from './websock';
 
 export default class TpSocket {
   constructor() {
@@ -14,4 +15,7 @@ export default class TpSocket {
     return b64.encode(this._name);
   }
 
+  get saluta() {
+    return Websock.greetme();
+  }
 }
