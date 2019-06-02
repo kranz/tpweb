@@ -1,6 +1,5 @@
 /* eslint camelcase:0 no-multi-spaces:0 */
 import Base64 from './base64';
-import Util from './util';
 
 export default function Websock() {
   'use strict';
@@ -102,7 +101,7 @@ export default function Websock() {
         }
         rQi -= goback;
       }
-      // Util.Debug("   waiting for " + (num-rQlen) +
+      //   console.log("   waiting for " + (num-rQlen) +
       //           " " + msg + " byte(s)");
       return true;  // true means need more data
     }
@@ -123,7 +122,7 @@ export default function Websock() {
   }
 
   function decode_message(data) {
-    // Util.Debug(">> decode_message: " + data);
+    //   console.log(">> decode_message: " + data);
     if (mode === 'binary') {
       // push arraybuffer values onto the end
       let u8 = new Uint8Array(data);
@@ -135,7 +134,7 @@ export default function Websock() {
       // base64 decode and concat to the end
       rQ = rQ.concat(Base64.decode(data, 0));
     }
-    // Util.Debug(">> decode_message, rQ: " + rQ);
+    //   console.log(">> decode_message, rQ: " + rQ);
   }
 
   //
@@ -144,30 +143,30 @@ export default function Websock() {
 
   function flush() {
     if (websocket.bufferedAmount !== 0) {
-      Util.Debug('bufferedAmount: ' + websocket.bufferedAmount);
+      console.log('bufferedAmount: ' + websocket.bufferedAmount);
     }
     if (websocket.bufferedAmount < api.maxBufferedAmount) {
-      // Util.Debug("arr: " + arr);
-      // Util.Debug("sQ: " + sQ);
+      //   console.log("arr: " + arr);
+      //   console.log("sQ: " + sQ);
       if (sQ.length > 0) {
         websocket.send(encode_message(sQ));
         sQ = [];
       }
       return true;
     }
-    Util.Info('Delaying send, bufferedAmount: ' + websocket.bufferedAmount);
+    console.log('Delaying send, bufferedAmount: ' + websocket.bufferedAmount);
     return false;
   }
 
   // overridable for testing
   function send(arr) {
-    // Util.Debug(">> send_array: " + arr);
+    //   console.log(">> send_array: " + arr);
     sQ = sQ.concat(arr);
     return flush();
   }
 
   function send_string(str) {
-    // Util.Debug(">> send_string: " + str);
+    //   console.log(">> send_string: " + str);
     api.send(str.split('').map(
       function (chr) { return chr.charCodeAt(0); }));
   }
@@ -176,27 +175,27 @@ export default function Websock() {
   // Other public functions
 
   function recv_message(e) {
-    // Util.Debug(">> recv_message: " + e.data.length);
+    //   console.log(">> recv_message: " + e.data.length);
     try {
       decode_message(e.data);
       if (rQlen() > 0) {
         eventHandlers.message();
         // Compact the receive queue
         if (rQ.length > rQmax) {
-          // Util.Debug("Compacting receive queue");
+          //   console.log("Compacting receive queue");
           rQ = rQ.slice(rQi);
           rQi = 0;
         }
       } else {
-        Util.Debug('Ignoring empty message');
+        console.log('Ignoring empty message');
       }
     } catch (exc) {
       if (typeof exc.stack !== 'undefined') {
-        Util.Warn('recv_message, caught exception: ' + exc.stack);
+        console.warn('recv_message, caught exception: ' + exc.stack);
       } else if (typeof exc.description !== 'undefined') {
-        Util.Warn('recv_message, caught exception: ' + exc.description);
+        console.warn('recv_message, caught exception: ' + exc.description);
       } else {
-        Util.Warn('recv_message, caught exception:' + exc);
+        console.warn('recv_message, caught exception:' + exc);
       }
       if (typeof exc.name !== 'undefined') {
         eventHandlers.error(exc.name + ': ' + exc.message);
@@ -204,7 +203,7 @@ export default function Websock() {
         eventHandlers.error(exc);
       }
     }
-    // Util.Debug("<< recv_message");
+    //   console.log("<< recv_message");
   }
 
   // Set event handlers
@@ -233,7 +232,7 @@ export default function Websock() {
     try {
       if (bt && ('binaryType' in WebSocket.prototype ||
                      !!(new WebSocket(ws_schema + '://.').binaryType))) {
-        Util.Info('Detected binaryType support in WebSockets');
+        console.log('Detected binaryType support in WebSockets');
         wsbt = true;
       }
     } catch (exc) {
@@ -259,7 +258,7 @@ export default function Websock() {
 
         for (let i = 0; i < protocols.length; i++) {
           if (protocols[i] === 'binary') {
-            Util.Error('Skipping unsupported WebSocket binary sub-protocol');
+            console.error('Skipping unsupported WebSocket binary sub-protocol');
           } else {
             new_protocols.push(protocols[i]);
           }
@@ -288,26 +287,26 @@ export default function Websock() {
     }
     websocket.onmessage = recv_message;
     websocket.onopen = function () {
-      Util.Debug('>> WebSock.onopen');
+      console.log('>> WebSock.onopen');
       if (websocket.protocol) {
         mode = websocket.protocol;
-        Util.Info('Server chose sub-protocol: ' + websocket.protocol);
+        console.log('Server chose sub-protocol: ' + websocket.protocol);
       } else {
         mode = 'base64';
-        Util.Error('Server select no sub-protocol!: ' + websocket.protocol);
+        console.error('Server select no sub-protocol!: ' + websocket.protocol);
       }
       eventHandlers.open();
-      Util.Debug('"<< WebSock.onopen');
+      console.log('"<< WebSock.onopen');
     };
     websocket.onclose = function (e) {
-      Util.Debug('>> WebSock.onclose');
+      console.log('>> WebSock.onclose');
       eventHandlers.close(e);
-      Util.Debug('<< WebSock.onclose');
+      console.log('<< WebSock.onclose');
     };
     websocket.onerror = function (e) {
-      Util.Debug('>> WebSock.onerror: ' + e);
+      console.log('>> WebSock.onerror: ' + e);
       eventHandlers.error(e);
-      Util.Debug('<< WebSock.onerror');
+      console.log('<< WebSock.onerror');
     };
   }
 
@@ -315,7 +314,7 @@ export default function Websock() {
     if (websocket) {
       if ((websocket.readyState === WebSocket.OPEN) ||
           (websocket.readyState === WebSocket.CONNECTING)) {
-        Util.Info('Closing WebSocket connection');
+        console.log('Closing WebSocket connection');
         websocket.close();
       }
       websocket.onmessage = function (e) { return; };
